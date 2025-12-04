@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ClassessController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\DiscussionController;
 
 
 /*
@@ -39,5 +42,32 @@ Route::post('archive/users/{id}', [UserController::class, 'archiveUser']);
 Route::get('/classes', [ClassessController::class, 'listActiveClasses']);
 Route::get('/classes/{id}', [ClassessController::class, 'getClass']);
 Route::post('create/classes', [ClassessController::class, 'createClass']);
+Route::post('join/classes', [ClassessController::class, 'joinClass']);
 Route::post('update/classes/{id}', [ClassessController::class, 'updateClass']);
 Route::post('archive/classes/{id}', [ClassessController::class, 'archiveClass']);
+
+// ASSIGNMENTS
+Route::post('create/assignments', [AssignmentController::class, 'createAssignment']);
+Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'getAssignments']);
+Route::get('/assignments/{id}', [AssignmentController::class, 'getAssignment']);
+Route::post('update/assignments/{id}', [AssignmentController::class, 'updateAssignment']);
+Route::delete('delete/assignments/{id}', [AssignmentController::class, 'deleteAssignment']);
+
+// SUBMISSIONS
+Route::post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
+Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 'gradeSubmission']);
+
+
+// QUIZZES
+Route::post('/quizzes', [QuizController::class, 'createQuiz']);
+Route::get('/quizzes/{quizId}', [QuizController::class, 'getQuiz']);
+Route::post('/quizzes/{quizId}/questions', [QuizController::class, 'addQuestion']);
+Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuiz']);
+Route::post('/quizzes/{quizId}/archive', [QuizController::class, 'archiveQuiz']);
+
+// DISCUSSIONS
+Route::post('/discussions', [DiscussionController::class, 'createDiscussion']);
+Route::get('/classes/{classId}/discussions', [DiscussionController::class, 'getDiscussions']);
+Route::get('/discussions/{id}', [DiscussionController::class, 'getDiscussion']);
+Route::post('/discussions/{discussionId}/reply', [DiscussionController::class, 'addReply']);
+Route::post('/discussions/{id}/archive', [DiscussionController::class, 'archiveDiscussion']);
