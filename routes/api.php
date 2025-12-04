@@ -8,6 +8,7 @@ use App\Http\Controllers\ClassessController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\DiscussionController;
+use App\Http\Controllers\AuthController;
 
 
 /*
@@ -22,8 +23,8 @@ use App\Http\Controllers\DiscussionController;
 */
 
 //AUTH
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 //ROLES
 Route::get('/roles', [RoleController::class, 'listActiveRoles']);
