@@ -32,7 +32,7 @@ class UserController extends Controller
             'last_name'  => 'required|string|max:100',
             'email'      => 'required|email|unique:users,email',
             'password'   => 'required|string|min:6',
-            'role_id'    => 'required|exists:roles,id',
+            'role_id'    => 'nullable|exists:roles,id',
             'avatar'     => 'nullable|string|max:255',
         ]);
 
