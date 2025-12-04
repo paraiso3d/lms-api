@@ -21,6 +21,10 @@ use App\Http\Controllers\DiscussionController;
 |
 */
 
+//AUTH
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
+
 //ROLES
 Route::get('/roles', [RoleController::class, 'listActiveRoles']);
 Route::get('/roles/{id}', [RoleController::class, 'getRole']);
