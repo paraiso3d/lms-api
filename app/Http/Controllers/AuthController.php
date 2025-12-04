@@ -20,6 +20,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)
             ->where('is_archived', 0)
+            ->with('role') // eager load role
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -37,10 +38,12 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'data' => [
                 'user'  => $user,
+                'role'  => $user->role, // include role details
                 'token' => $token
             ]
         ]);
     }
+
 
     // ============================
     // LOGOUT
