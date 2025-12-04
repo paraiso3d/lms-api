@@ -47,7 +47,7 @@ Route::post('archive/users/{id}', [UserController::class, 'archiveUser']);
 Route::get('/classes', [ClassessController::class, 'listActiveClasses']);
 Route::get('/classes/{id}', [ClassessController::class, 'getClass']);
 Route::post('create/classes', [ClassessController::class, 'createClass']);
-Route::post('join/classes', [ClassessController::class, 'joinClass']);
+Route::middleware('auth:sanctum')->post('join/classes', [ClassessController::class, 'joinClass']);
 Route::post('update/classes/{id}', [ClassessController::class, 'updateClass']);
 Route::post('archive/classes/{id}', [ClassessController::class, 'archiveClass']);
 

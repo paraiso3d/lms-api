@@ -71,10 +71,19 @@ class ClassessController extends Controller
     {
         $request->validate([
             'class_code' => 'required|string|exists:classes,class_code',
-            'student_id' => 'required|exists:users,id'
         ]);
 
-        // Find the class by code
+        // Authenticated student
+        $student = auth()->user();
+
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Find the class
         $class = ClassModel::where('class_code', $request->class_code)
             ->where('is_archived', 0)
             ->first();
@@ -87,15 +96,15 @@ class ClassessController extends Controller
         }
 
         // Check if already joined
-        if ($class->students()->where('student_id', $request->student_id)->exists()) {
+        if ($class->students()->where('student_id', $student->id)->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Student already joined this class.',
+                'message' => 'You already joined this class.',
             ], 409);
         }
 
-        // Attach student to class
-        $class->students()->attach($request->student_id);
+        // Attach student
+        $class->students()->attach($student->id);
 
         return response()->json([
             'success' => true,
