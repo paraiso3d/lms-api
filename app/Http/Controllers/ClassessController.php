@@ -12,10 +12,30 @@ class ClassessController extends Controller
      */
     public function listActiveClasses()
     {
-        $classes = ClassModel::where('is_archived', 0)
-            ->with('teacher') // eager load teacher
-            ->orderBy('id', 'asc')
-            ->get();
+        $user = auth()->user(); // current logged-in user
+
+        $query = ClassModel::where('is_archived', 0)
+            ->with('teacher')
+            ->orderBy('id', 'asc');
+
+        // Role-based filtering
+        if ($user->role_name === 'Teacher') {
+            // show only classes the teacher created
+            $query->where('teacher_id', $user->id);
+        } elseif ($user->role_name === 'Student') {
+            // show only classes where student is enrolled
+            $query->whereHas('students', function ($q) use ($user) {
+                $q->where('student_id', $user->id);
+            });
+        } elseif ($user->role_name !== 'Admin') {
+            // everyone else: block entry — unless you want another role
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 403);
+        }
+
+        $classes = $query->get();
 
         return response()->json([
             'success' => true,
