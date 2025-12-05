@@ -35,10 +35,11 @@ class AssignmentController extends Controller
             'created_by'   => auth()->id(),
         ]);
 
-        // Save attachments
+        // Save attachments using helper
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('assignment_attachments');
+
+                $path = $this->saveFileToPublic($file, 'assignment');
 
                 AssignmentAttachment::create([
                     'assignment_id' => $assignment->id,
@@ -62,11 +63,10 @@ class AssignmentController extends Controller
     {
         $assignments = Assignment::where('class_id', $classId)
             ->where('is_archived', 0)
-            ->with(['attachments' => function ($q) {
-                $q->where('is_archived', 0);
-            }, 'submissions' => function ($q) {
-                $q->where('is_archived', 0);
-            }])
+            ->with([
+                'attachments' => fn($q) => $q->where('is_archived', 0),
+                'submissions' => fn($q) => $q->where('is_archived', 0)
+            ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -84,12 +84,8 @@ class AssignmentController extends Controller
         $assignment = Assignment::where('id', $id)
             ->where('is_archived', 0)
             ->with([
-                'attachments' => function ($q) {
-                    $q->where('is_archived', 0);
-                },
-                'submissions.files' => function ($q) {
-                    $q->where('is_archived', 0);
-                }
+                'attachments' => fn($q) => $q->where('is_archived', 0),
+                'submissions.files' => fn($q) => $q->where('is_archived', 0)
             ])
             ->first();
 
@@ -138,7 +134,7 @@ class AssignmentController extends Controller
     }
 
     // ============================================================
-    // ARCHIVE ASSIGNMENT (SOFT DELETE)
+    // ARCHIVE ASSIGNMENT
     // ============================================================
     public function deleteAssignment($id)
     {
@@ -151,18 +147,14 @@ class AssignmentController extends Controller
             ], 404);
         }
 
-        // Archive assignment
         $assignment->update(['is_archived' => 1]);
 
-        // Archive attachments
         AssignmentAttachment::where('assignment_id', $id)
             ->update(['is_archived' => 1]);
 
-        // Archive submissions
         Submission::where('assignment_id', $id)
             ->update(['is_archived' => 1]);
 
-        // Archive submission files
         SubmissionFile::whereIn(
             'submission_id',
             Submission::where('assignment_id', $id)->pluck('id')
@@ -192,7 +184,8 @@ class AssignmentController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('submission_files');
+
+                $path = $this->saveFileToPublic($file, 'submission');
 
                 SubmissionFile::create([
                     'submission_id' => $submission->id,
@@ -240,5 +233,21 @@ class AssignmentController extends Controller
             'message' => 'Submission graded!',
             'data'    => $submission,
         ]);
+    }
+
+    // ============================================================
+    // FILE SAVER (PUBLIC)
+    // ============================================================
+    private function saveFileToPublic($file, $prefix)
+    {
+        $directory = public_path('lms_files');
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = $prefix . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return 'lms_files/' . $filename;
     }
 }
