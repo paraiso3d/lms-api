@@ -267,6 +267,75 @@ class ClassessController extends Controller
         ]);
     }
 
+
+    public function getClassGrades($classId)
+    {
+        $class = ClassModel::with([
+            'students:id,first_name,last_name,email',
+            'assignments.submissions' => fn($q) => $q->where('is_archived', 0),
+            'quizzes.submissions'     => fn($q) => $q->where('is_archived', 0),
+        ])->find($classId);
+
+        if (!$class) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Class not found.',
+            ], 404);
+        }
+
+        $students = $class->students->map(function ($student) use ($class) {
+            $assignmentTotal = 0;
+            $assignmentMax = 0;
+
+            // Assignments
+            foreach ($class->assignments as $assignment) {
+                $submission = $assignment->submissions->firstWhere('student_id', $student->id);
+                if ($submission) {
+                    $assignmentTotal += $submission->grade ?? 0;
+                }
+                $assignmentMax += $assignment->max_points;
+            }
+
+            $quizTotal = 0;
+            $quizMax = 0;
+
+            // Quizzes
+            foreach ($class->quizzes as $quiz) {
+                $submission = $quiz->submissions->firstWhere('student_id', $student->id);
+                if ($submission) {
+                    $quizTotal += $submission->score ?? 0;
+                }
+                $quizMax += $quiz->total_points;
+            }
+
+            $overallPercentage = ($assignmentMax + $quizMax) > 0
+                ? round((($assignmentTotal + $quizTotal) / ($assignmentMax + $quizMax)) * 100)
+                : null;
+
+            return [
+                'student_name' => trim($student->first_name . ' ' . $student->last_name),
+                'email'        => $student->email,
+                'assignments'  => "{$assignmentTotal}/{$assignmentMax}",
+                'quizzes'      => "{$quizTotal}/{$quizMax}",
+                'average'      => $overallPercentage !== null ? "{$overallPercentage}%" : '-',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'class_name' => $class->class_name,
+                'grades' => $students,
+            ]
+        ]);
+    }
+
+
+
+
+
+
+
     /**
      * HELPERS
      */
