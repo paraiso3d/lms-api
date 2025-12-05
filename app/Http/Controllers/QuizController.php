@@ -192,4 +192,72 @@ class QuizController extends Controller
             'message' => 'Quiz archived successfully'
         ]);
     }
+    // ============================================================
+    // QUIZ RESULTS
+    // ============================================================
+
+    public function getQuizResults($quizId)
+    {
+        $quiz = Quiz::with([
+            'submissions' => fn($q) => $q->where('is_archived', 0)->orderBy('created_at', 'desc'),
+            'submissions.student:id,first_name,last_name,email'
+        ])
+            ->where('id', $quizId)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$quiz) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Quiz not found'
+            ], 404);
+        }
+
+        $totalPoints = $quiz->total_points;
+
+        $completedCount = $quiz->submissions->count();
+
+        // calculate stats
+        $averageScore = $completedCount > 0
+            ? round($quiz->submissions->avg('score'), 2)
+            : 0;
+
+        $averagePercentage = $completedCount > 0
+            ? round(($averageScore / $totalPoints) * 100)
+            : 0;
+
+        // students passing = >= 50% (you can adjust)
+        $passRate = $completedCount > 0
+            ? round(($quiz->submissions->filter(fn($s) => $s->score >= ($totalPoints / 2))->count() / $completedCount) * 100)
+            : 0;
+
+        // results list
+        $results = $quiz->submissions->map(function ($s) use ($totalPoints) {
+            return [
+                'student_name' => trim($s->student->first_name . ' ' . $s->student->last_name),
+                'email'        => $s->student->email,
+                'status'       => 'Completed',
+                'score'        => "{$s->score}/{$totalPoints}",
+                'percentage'   => round(($s->score / $totalPoints) * 100),
+                'submitted'    => $s->created_at->format('M j, g:i A'),
+                'submission_id' => $s->id,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'quiz' => [
+                    'title'          => $quiz->title,
+                    'description'    => $quiz->description,
+                    'total_points'   => $totalPoints,
+                    'completed'      => $completedCount,
+                    'average_score'  => "{$averageScore}/{$totalPoints}",
+                    'average_percent' => $averagePercentage,
+                    'pass_rate'      => $passRate,
+                ],
+                'results' => $results
+            ]
+        ]);
+    }
 }

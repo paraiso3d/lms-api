@@ -58,6 +58,7 @@ Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'get
 Route::get('/assignments/{id}', [AssignmentController::class, 'getAssignment']);
 Route::post('update/assignments/{id}', [AssignmentController::class, 'updateAssignment']);
 Route::delete('delete/assignments/{id}', [AssignmentController::class, 'deleteAssignment']);
+Route::get('/assignmments/{id}/details', [AssignmentController::class, 'getAssignmentDetails']);
 
 // SUBMISSIONS
 Route::post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
@@ -70,6 +71,7 @@ Route::get('/quizzes/{quizId}', [QuizController::class, 'getQuiz']);
 Route::post('/quizzes/{quizId}/questions', [QuizController::class, 'addQuestion']);
 Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuiz']);
 Route::post('/quizzes/{quizId}/archive', [QuizController::class, 'archiveQuiz']);
+Route::get('/quizzes/{quizId}/results', [QuizController::class, 'getQuizResults']);
 
 // DISCUSSIONS
 Route::post('/discussions', [DiscussionController::class, 'createDiscussion']);

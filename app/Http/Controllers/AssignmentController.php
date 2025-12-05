@@ -7,6 +7,8 @@ use App\Models\AssignmentAttachment;
 use App\Models\Submission;
 use App\Models\SubmissionFile;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AssignmentController extends Controller
 {
@@ -234,6 +236,140 @@ class AssignmentController extends Controller
             'data'    => $submission,
         ]);
     }
+
+
+
+    public function getAssignmentDetails($id)
+    {
+        // load assignment, class -> teacher, attachments, submissions -> student
+        $assignment = Assignment::with([
+            'class.teacher:id,first_name,last_name,email',
+            'attachments' => fn($q) => $q->where('is_archived', 0),
+            'submissions' => fn($q) => $q->where('is_archived', 0)->orderBy('created_at', 'desc'),
+            'submissions.student' => fn($q) => $q->select('id', 'first_name', 'last_name', 'email')
+        ])->where('id', $id)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (! $assignment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment not found'
+            ], 404);
+        }
+
+        // formatted meta
+        $due = $assignment->due_date ? Carbon::parse($assignment->due_date) : null;
+        $due_formatted = $due ? $due->format('M j, Y, g:i A') : null;
+
+        // submission stats
+        $total = $assignment->submissions->count();
+        $graded = $assignment->submissions->whereNotNull('grade')->count();
+        $not_graded = $total - $graded;
+
+        // build submissions list
+        $submissions = $assignment->submissions->map(function ($s) {
+            $student = $s->student;
+            return [
+                'id'            => $s->id,
+                'student_name'  => $student ? trim($student->first_name . ' ' . $student->last_name) : 'Unknown',
+                'submitted_at'  => $s->created_at ? $s->created_at->format('n/j/Y') : null,
+                'submitted_time' => $s->created_at ? $s->created_at->format('g:i A') : null,
+                'grade'         => $s->grade !== null ? $s->grade : 'Not graded',
+                'status'        => $s->status ?? 'unknown',
+            ];
+        });
+
+        $response = [
+            'success' => true,
+            'data' => [
+                'title'        => $assignment->title,
+                'topic'        => $assignment->topic,
+                'teacher' => $assignment->class && $assignment->class->teacher ? [
+                    'name'  => trim($assignment->class->teacher->first_name . ' ' . $assignment->class->teacher->last_name),
+                    'email' => $assignment->class->teacher->email,
+                ] : null,
+                'max_points'   => $assignment->max_points,
+                'due_date'     => $due_formatted,
+                'instructions' => $assignment->instructions,
+                'attachments'  => $assignment->attachments->map(fn($a) => [
+                    'id' => $a->id,
+                    'file_path' => $a->file_path,
+                    'file_type' => $a->file_type,
+                    'url' => $a->file_path ? asset($a->file_path) : null
+                ]),
+                'submission_summary' => [
+                    'total_submissions' => $total,
+                    'graded' => $graded,
+                    'not_graded' => $not_graded
+                ],
+                'submissions' => $submissions,
+            ],
+        ];
+
+        return response()->json($response);
+    }
+
+
+    public function getAllSubmissions($assignmentId)
+    {
+        $assignment = Assignment::with([
+            'class.teacher:id,first_name,last_name,email',
+            'submissions' => fn($q) => $q->where('is_archived', 0)->orderBy('created_at', 'desc'),
+            'submissions.student:id,first_name,last_name,email',
+            'submissions.files' => fn($q) => $q->where('is_archived', 0)
+        ])
+            ->where('id', $assignmentId)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment not found'
+            ], 404);
+        }
+
+        // format submissions
+        $submissions = $assignment->submissions->map(function ($s) {
+            return [
+                'id'            => $s->id,
+                'student_name'  => trim($s->student->first_name . ' ' . $s->student->last_name),
+                'submitted_date' => $s->created_at->format('n/j/Y'),
+                'submitted_time' => $s->created_at->format('g:i:s A'),
+                'grade'         => $s->grade !== null ? "{$s->grade}/100" : "Not graded",
+                'numeric_grade' => $s->grade,
+                'feedback'      => $s->feedback,
+                'status'        => $s->status,
+                'submission_text' => $s->submission_text ?? null, // if you have text
+                'files' => $s->files->map(fn($f) => [
+                    'id' => $f->id,
+                    'file_path' => $f->file_path,
+                    'file_type' => $f->file_type,
+                    'url' => asset($f->file_path)
+                ])
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'assignment' => [
+                    'id'        => $assignment->id,
+                    'title'     => $assignment->title,
+                    'topic'     => $assignment->topic,
+                    'class_id'  => $assignment->class_id,
+                    'teacher' => $assignment->class && $assignment->class->teacher ? [
+                        'name'  => trim($assignment->class->teacher->first_name . ' ' . $assignment->class->teacher->last_name),
+                        'email' => $assignment->class->teacher->email,
+                    ] : null,
+                    'total_submissions' => $assignment->submissions->count(),
+                ],
+                'submissions' => $submissions
+            ]
+        ]);
+    }
+
 
     // ============================================================
     // FILE SAVER (PUBLIC)
