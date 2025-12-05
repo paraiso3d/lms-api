@@ -43,6 +43,41 @@ class ClassessController extends Controller
         ]);
     }
 
+
+    public function getClassPeople($classId)
+    {
+        $class = ClassModel::with([
+            'teacher:id,first_name,last_name,email',
+            'students:id,first_name,last_name,email'
+        ])->find($classId);
+
+        if (!$class) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Class not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'teacher' => $class->teacher ? [
+                    'full_name' => $class->teacher->first_name . ' ' . $class->teacher->last_name,
+                    'email'     => $class->teacher->email
+                ] : null,
+
+                'students' => $class->students->map(function ($student) {
+                    return [
+                        'full_name' => $student->first_name . ' ' . $student->last_name,
+                        'email'     => $student->email
+                    ];
+                })
+            ]
+        ]);
+    }
+
+
+
     /**
      * Create a new class.
      */
