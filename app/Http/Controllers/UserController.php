@@ -40,7 +40,7 @@ class UserController extends Controller
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'email'      => $request->email,
-            'password'   => $request->password, // auto-hashed in model
+            'password'   => $request->password,
             'role_id'    => $request->role_id,
             'avatar'     => $request->avatar,
         ]);
