@@ -18,6 +18,9 @@ use App\Http\Controllers\AuthController;
 |
 */
 
+//TEST
+
+
 //AUTH
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
@@ -40,7 +43,7 @@ Route::post('archive/users/{id}', [UserController::class, 'archiveUser']);
 
 
 //CLASSES
-Route::get('/classes', [ClassessController::class, 'listActiveClasses']);
+Route::middleware('auth:sanctum')->get('/classes', [ClassessController::class, 'listActiveClasses']);
 Route::get('/classes/{classId}/people', [ClassessController::class, 'getClassPeople']);
 Route::get('/classes/{classId}/grades', [ClassessController::class, 'getClassGrades']);
 Route::get('/classes/{id}', [ClassessController::class, 'getClass']);
