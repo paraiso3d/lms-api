@@ -11,37 +11,41 @@ class ClassessController extends Controller
      * List all active classes.
      */
     public function listActiveClasses()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        $query = ClassModel::where('is_archived', 0)
-            ->with('teacher')
-            ->orderBy('id', 'asc');
+    // Eager load role
+    $user->load('role'); // make sure User model has: public function role() { return $this->belongsTo(Role::class, 'role_id'); }
 
-        // Get role name safely
-        $role = strtolower($user->role->role_name ?? '');
+    $query = ClassModel::where('is_archived', 0)
+        ->with('teacher')
+        ->orderBy('id', 'asc');
 
-        if ($role === 'teacher') {
+    // Role-based filtering
+    $role = strtolower($user->role->role_name ?? '');
 
-            $query->where('teacher_id', $user->id);
-        } elseif ($role === 'student') {
-
-            $query->whereHas('students', function ($q) use ($user) {
-                $q->where('student_id', $user->id);
-            });
-        } elseif ($role !== 'admin') {
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized.',
-            ], 403);
-        }
-
+    if ($role === 'teacher') {
+        $query->where('teacher_id', $user->id);
+    } elseif ($role === 'student') {
+        $query->whereHas('students', function ($q) use ($user) {
+            $q->where('student_id', $user->id);
+        });
+    } elseif ($role !== 'admin') {
         return response()->json([
-            'success' => true,
-            'data' => $query->get(),
-        ]);
+            'success' => false,
+            'message' => 'Unauthorized',
+        ], 403);
     }
+
+    $classes = $query->get();
+
+    return response()->json([
+        'success' => true,
+        'role_name' => $user->role->role_name ?? null, // include role_name
+        'data' => $classes,
+    ]);
+}
+
 
 
 
