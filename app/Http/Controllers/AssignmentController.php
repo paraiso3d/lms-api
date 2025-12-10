@@ -24,7 +24,7 @@ class AssignmentController extends Controller
             'max_points'    => 'required|integer',
             'due_date'      => 'nullable|date',
             'topic'         => 'nullable|string|max:255',
-            'attachments.*' => 'nullable|file|max:50240', // 50MB
+            'attachments.*' => 'nullable|file|max:50240',
         ]);
 
         $assignment = Assignment::create([
@@ -174,13 +174,22 @@ class AssignmentController extends Controller
     public function submit(Request $request, $assignmentId)
     {
         $request->validate([
-            'student_id' => 'required|exists:users,id',
-            'files.*'    => 'nullable|file|max:50240',
+            'files.*' => 'nullable|file|max:50240',
         ]);
+
+        $student = auth()->user();
+
+        // Optional: block non-students
+        if ($student->role->role_name !== 'student') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only students can submit assignments.',
+            ], 403);
+        }
 
         $submission = Submission::create([
             'assignment_id' => $assignmentId,
-            'student_id'    => $request->student_id,
+            'student_id'    => $student->id,
             'status'        => 'submitted',
         ]);
 
@@ -203,6 +212,7 @@ class AssignmentController extends Controller
             'data'    => $submission->load('files'),
         ]);
     }
+
 
     // ============================================================
     // GRADE SUBMISSION
@@ -341,7 +351,7 @@ class AssignmentController extends Controller
                 'numeric_grade' => $s->grade,
                 'feedback'      => $s->feedback,
                 'status'        => $s->status,
-                'submission_text' => $s->submission_text ?? null, // if you have text
+                'submission_text' => $s->submission_text ?? null,
                 'files' => $s->files->map(fn($f) => [
                     'id' => $f->id,
                     'file_path' => $f->file_path,

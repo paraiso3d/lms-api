@@ -47,13 +47,13 @@ Route::middleware('auth:sanctum')->get('/classes', [ClassessController::class, '
 Route::get('/classes/{classId}/people', [ClassessController::class, 'getClassPeople']);
 Route::get('/classes/{classId}/grades', [ClassessController::class, 'getClassGrades']);
 Route::get('/classes/{id}', [ClassessController::class, 'getClass']);
-Route::post('create/classes', [ClassessController::class, 'createClass']);
+Route::middleware('auth:sanctum')->post('create/classes', [ClassessController::class, 'createClass']);
 Route::middleware('auth:sanctum')->post('join/classes', [ClassessController::class, 'joinClass']);
 Route::post('update/classes/{id}', [ClassessController::class, 'updateClass']);
 Route::post('archive/classes/{id}', [ClassessController::class, 'archiveClass']);
 
 // ASSIGNMENTS
-Route::post('create/assignments', [AssignmentController::class, 'createAssignment']);
+Route::middleware('auth:sanctum')->post('create/assignments', [AssignmentController::class, 'createAssignment']);
 Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'getAssignments']);
 Route::get('/assignments/{id}', [AssignmentController::class, 'getAssignment']);
 Route::post('update/assignments/{id}', [AssignmentController::class, 'updateAssignment']);
@@ -61,7 +61,7 @@ Route::delete('delete/assignments/{id}', [AssignmentController::class, 'deleteAs
 Route::get('/assignmments/{id}/details', [AssignmentController::class, 'getAssignmentDetails']);
 
 // SUBMISSIONS
-Route::post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
+Route::middleware('auth:sanctum')->post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
 Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 'gradeSubmission']);
 
 

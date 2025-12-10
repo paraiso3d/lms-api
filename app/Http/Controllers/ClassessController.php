@@ -15,7 +15,7 @@ class ClassessController extends Controller
         $user = auth()->user();
 
         // Eager load role
-        $user->load('role'); // make sure User model has: public function role() { return $this->belongsTo(Role::class, 'role_id'); }
+        $user->load('role');
 
         $query = ClassModel::where('is_archived', 0)
             ->with('teacher')
@@ -41,7 +41,7 @@ class ClassessController extends Controller
 
         return response()->json([
             'success' => true,
-            'role_name' => $user->role->role_name ?? null, // include role_name
+            'role_name' => $user->role->role_name ?? null,
             'data' => $classes,
         ]);
     }
@@ -93,14 +93,24 @@ class ClassessController extends Controller
             'section'    => 'nullable|string|max:100',
             'subject'    => 'nullable|string|max:150',
             'room'       => 'nullable|string|max:50',
-            'teacher_id' => 'required|exists:users,id',
             'description' => 'nullable|string',
         ]);
+
+        // Authenticated user = teacher
+        $teacherId = auth()->id();
+
+        // Optional: Block non-teachers
+        if (auth()->user()->role->role_name !== 'teacher') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only teachers can create classes.',
+            ], 403);
+        }
 
         // Auto-generate class code
         $classCode = $this->generateClassCode();
 
-        // Ensure unique (rare, but let's play safe)
+        // Ensure unique code
         while (ClassModel::where('class_code', $classCode)->exists()) {
             $classCode = $this->generateClassCode();
         }
@@ -110,7 +120,7 @@ class ClassessController extends Controller
             'section'     => $request->section,
             'subject'     => $request->subject,
             'room'        => $request->room,
-            'teacher_id'  => $request->teacher_id,
+            'teacher_id'  => $teacherId, // <= auto from auth
             'description' => $request->description,
             'class_code'  => $classCode,
         ]);
@@ -121,6 +131,7 @@ class ClassessController extends Controller
             'data' => $class,
         ], 201);
     }
+
 
 
 
