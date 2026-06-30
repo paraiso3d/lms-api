@@ -51,7 +51,7 @@ class QuizController extends Controller
         $request->validate([
             'question_text' => 'required|string',
             'points'        => 'required|integer',
-            'options'       => 'required|array|min:2', // at least 2 options
+            'options'       => 'required|array|min:2', 
             'options.*.option_text' => 'required|string',
             'options.*.is_correct'  => 'required|boolean',
         ]);

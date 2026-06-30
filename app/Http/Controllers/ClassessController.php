@@ -14,14 +14,38 @@ class ClassessController extends Controller
     {
         $user = auth()->user();
 
-        // Eager load role
         $user->load('role');
 
         $query = ClassModel::where('is_archived', 0)
-            ->with('teacher')
+            ->with([
+                'teacher',
+
+                'assignments' => function ($q) {
+                    $q->where('is_archived', 0)
+                        ->select(
+                            'id',
+                            'class_id',
+                            'title',
+                            'due_date',
+                            'max_points',
+                            'topic'
+                        )
+                        ->orderBy('created_at', 'desc');
+                },
+
+                'quizzes' => function ($q) {
+                    $q->where('is_archived', 0)
+                        ->select(
+                            'id',
+                            'class_id',
+                            'title',
+                            'due_date'
+                        )
+                        ->orderBy('created_at', 'desc');
+                }
+            ])
             ->orderBy('id', 'asc');
 
-        // Role-based filtering
         $role = strtolower($user->role->role_name ?? '');
 
         if ($role === 'teacher') {
@@ -40,9 +64,9 @@ class ClassessController extends Controller
         $classes = $query->get();
 
         return response()->json([
-            'success' => true,
+            'success'   => true,
             'role_name' => $user->role->role_name ?? null,
-            'data' => $classes,
+            'data'      => $classes,
         ]);
     }
 
