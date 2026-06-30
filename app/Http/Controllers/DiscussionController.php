@@ -125,4 +125,17 @@ class DiscussionController extends Controller
             'message' => 'Discussion archived successfully'
         ]);
     }
+
+    private function saveFileToPublic($file, $prefix)
+    {
+        $directory = public_path('lms_files');
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = $prefix . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return 'lms_files/' . $filename;
+    }
 }

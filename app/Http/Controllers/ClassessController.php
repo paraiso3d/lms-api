@@ -214,7 +214,37 @@ class ClassessController extends Controller
      */
     public function getClass($id)
     {
-        $class = ClassModel::with(['teacher', 'students'])->find($id);
+        $class = ClassModel::where('id', $id)
+            ->where('is_archived', 0)
+            ->with([
+                'teacher',
+                'students',
+
+                'assignments' => function ($q) {
+                    $q->where('is_archived', 0)
+                        ->select(
+                            'id',
+                            'class_id',
+                            'title',
+                            'due_date',
+                            'max_points',
+                            'topic'
+                        )
+                        ->orderBy('created_at', 'desc');
+                },
+
+                'quizzes' => function ($q) {
+                    $q->where('is_archived', 0)
+                        ->select(
+                            'id',
+                            'class_id',
+                            'title',
+                            'due_date'
+                        )
+                        ->orderBy('created_at', 'desc');
+                }
+            ])
+            ->first();
 
         if (!$class) {
             return response()->json([
