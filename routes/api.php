@@ -66,7 +66,7 @@ Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 
 
 
 // QUIZZES
-Route::post('/quizzes', [QuizController::class, 'createQuiz']);
+Route::post('/quizzes', [QuizController::class, 'createQuiz'])->middleware('auth:sanctum');
 Route::get('/quizzes/{quizId}', [QuizController::class, 'getQuiz']);
 Route::post('/quizzes/{quizId}/questions', [QuizController::class, 'addQuestion']);
 Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuiz']);

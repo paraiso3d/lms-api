@@ -25,7 +25,6 @@ class QuizController extends Controller
             'time_limit'  => 'nullable|integer',
             'due_date'    => 'nullable|date',
         ]);
-
         $quiz = Quiz::create([
             'class_id'     => $request->class_id,
             'title'        => $request->title,
@@ -51,7 +50,7 @@ class QuizController extends Controller
         $request->validate([
             'question_text' => 'required|string',
             'points'        => 'required|integer',
-            'options'       => 'required|array|min:2', 
+            'options'       => 'required|array|min:2',
             'options.*.option_text' => 'required|string',
             'options.*.is_correct'  => 'required|boolean',
         ]);
