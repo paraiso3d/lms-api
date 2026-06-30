@@ -33,4 +33,8 @@ class Discussion extends Model
             ->where('is_archived', 0)
             ->orderBy('created_at', 'asc');
     }
+    public function attachments()
+    {
+        return $this->hasMany(DiscussionAttachment::class, 'discussion_id');
+    }
 }

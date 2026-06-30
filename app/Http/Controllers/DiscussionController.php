@@ -20,7 +20,21 @@ class DiscussionController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $discussion = Discussion::create($request->all());
+        $discussion = Discussion::create([
+            'class_id'    => $request->class_id,
+            'user_id'     => $request->user_id,
+            'title'       => $request->title,
+            'description' => $request->description,
+        ]);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $discussion->attachments()->create([
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $this->saveFileToPublic($file, 'discussion'),
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
