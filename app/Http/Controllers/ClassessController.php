@@ -242,6 +242,23 @@ class ClassessController extends Controller
                             'due_date'
                         )
                         ->orderBy('created_at', 'desc');
+                },
+
+                // 👇 ADDED: discussions with attachments
+                'discussions' => function ($q) {
+                    $q->where('is_archived', 0)
+                        ->with([
+                            'attachments' => function ($a) {
+                                $a->where('is_archived', 0)
+                                    ->select(
+                                        'id',
+                                        'discussion_id',
+                                        'file_name',
+                                        'file_path'
+                                    );
+                            }
+                        ])
+                        ->orderBy('created_at', 'desc');
                 }
             ])
             ->first();

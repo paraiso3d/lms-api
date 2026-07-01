@@ -51,4 +51,8 @@ class Classess extends Model
     {
         return $this->hasMany(Quiz::class, 'class_id');
     }
+    public function discussions()
+    {
+        return $this->hasMany(Discussion::class, 'class_id');
+    }
 }
