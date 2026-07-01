@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Discussion;
 use App\Models\DiscussionReply;
+use Illuminate\Support\Facades\DB;
 
 class DiscussionController extends Controller
 {
@@ -14,18 +15,45 @@ class DiscussionController extends Controller
     public function createDiscussion(Request $request)
     {
         $request->validate([
-            'class_id'   => 'required|exists:classes,id',
-            'user_id'    => 'required|exists:users,id',
-            'title'      => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+            'class_id'     => 'required|exists:classes,id',
+            'user_id'      => 'required|exists:users,id',
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
 
+            // true = send to everyone
+            'send_to_all'  => 'required|boolean',
+
+            // only required if send_to_all = false
+            'student_ids'   => 'nullable|array',
+            'student_ids.*' => 'exists:users,id',
+        ]);
         $discussion = Discussion::create([
             'class_id'    => $request->class_id,
             'user_id'     => $request->user_id,
             'title'       => $request->title,
             'description' => $request->description,
         ]);
+
+        // Determine recipients
+        if ($request->send_to_all) {
+
+            $studentIds = DB::table('class_student')
+                ->where('class_id', $request->class_id)
+                ->pluck('student_id');
+        } else {
+
+            $studentIds = collect($request->student_ids);
+        }
+
+        // Save recipients
+        foreach ($studentIds as $studentId) {
+            DB::table('discussion_student')->insert([
+                'discussion_id' => $discussion->id,
+                'student_id' => $studentId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
