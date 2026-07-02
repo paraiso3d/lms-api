@@ -29,9 +29,8 @@ class Discussion extends Model
     // Discussion has many replies
     public function replies()
     {
-        return $this->hasMany(DiscussionReply::class)
-            ->where('is_archived', 0)
-            ->orderBy('created_at', 'asc');
+        return $this->hasMany(DiscussionReply::class, 'discussion_id')
+            ->where('is_archived', 0);
     }
     public function attachments()
     {
