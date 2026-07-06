@@ -13,6 +13,7 @@ class AssignmentAttachment extends Model
         'assignment_id',
         'file_path',
         'file_type',
+        'is_archived',
     ];
 
     public function assignment()
