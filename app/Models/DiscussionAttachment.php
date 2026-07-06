@@ -13,6 +13,18 @@ class DiscussionAttachment extends Model
         'file_name',
         'file_path',
     ];
+
+
+    protected $appends = ['file_url'];
+
+    public function getFileUrlAttribute()
+    {
+        if (!$this->file_path) {
+            return null;
+        }
+
+        return asset('storage/' . $this->file_path);
+    }
     public function discussion()
     {
         return $this->belongsTo(Discussion::class, 'discussion_id');
