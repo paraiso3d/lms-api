@@ -256,6 +256,14 @@ class ClassessController extends Controller
                                         'file_name',
                                         'file_path'
                                     );
+                            },
+
+                            'replies' => function ($r) {
+                                $r->where('is_archived', 0)
+                                    ->with([
+                                        'user:id,first_name,last_name,email'
+                                    ])
+                                    ->orderBy('created_at', 'asc');
                             }
                         ])
                         ->orderBy('created_at', 'desc');
