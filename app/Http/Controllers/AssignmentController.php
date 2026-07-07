@@ -74,10 +74,10 @@ class AssignmentController extends Controller
                     $q->where('is_archived', 0);
                 },
 
-                'submissions' => function ($q) use ($studentId) {
-                    $q->where('is_archived', 0)
-                        ->where('student_id', $studentId);
-                }
+                // 'submissions' => function ($q) use ($studentId) {
+                //     $q->where('is_archived', 0)
+                //         ->where('student_id', $studentId);
+                // }
             ])
             ->orderBy('created_at', 'desc')
             ->get();
