@@ -63,19 +63,28 @@ class AssignmentController extends Controller
     // ============================================================
     public function getAssignments($classId)
     {
+        $studentId = auth()->id();
+
         $assignments = Assignment::where('class_id', $classId)
             ->where('is_archived', 0)
             ->with([
-                'topic',
-                'attachments' => fn($q) => $q->where('is_archived', 0),
-                'submissions' => fn($q) => $q->where('is_archived', 0)
+                'topic:id,topic_name',
+
+                'attachments' => function ($q) {
+                    $q->where('is_archived', 0);
+                },
+
+                'submissions' => function ($q) use ($studentId) {
+                    $q->where('is_archived', 0)
+                        ->where('student_id', $studentId);
+                }
             ])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json([
             'success' => true,
-            'data'    => $assignments,
+            'data' => $assignments,
         ]);
     }
 
