@@ -22,13 +22,16 @@ class ClassessController extends Controller
 
                 'assignments' => function ($q) {
                     $q->where('is_archived', 0)
+                        ->with([
+                            'topic:id,topic_name'
+                        ])
                         ->select(
                             'id',
                             'class_id',
                             'title',
                             'due_date',
                             'max_points',
-                            'topic'
+                            'topic_id'
                         )
                         ->orderBy('created_at', 'desc');
                 },
