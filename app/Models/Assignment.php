@@ -15,7 +15,7 @@ class Assignment extends Model
         'instructions',
         'max_points',
         'due_date',
-        'topic',
+        'topic_id',
         'attachment_count',
         'is_archived',
         'created_by',
@@ -24,6 +24,11 @@ class Assignment extends Model
     public function class()
     {
         return $this->belongsTo(Classess::class, 'class_id');
+    }
+
+    public function topic()
+    {
+        return $this->belongsTo(Topic::class, 'topic_id');
     }
 
     public function teacher()

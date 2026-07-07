@@ -23,7 +23,7 @@ class AssignmentController extends Controller
             'instructions'  => 'nullable|string',
             'max_points'    => 'required|integer',
             'due_date'      => 'nullable|date',
-            'topic'         => 'nullable|string|max:255',
+            'topic_id' => 'nullable|exists:topics,id',
             'attachments.*' => 'nullable|file|max:50240',
         ]);
 
@@ -33,7 +33,7 @@ class AssignmentController extends Controller
             'instructions' => $request->instructions,
             'max_points'   => $request->max_points,
             'due_date'     => $request->due_date,
-            'topic'        => $request->topic,
+            'topic_id'     => $request->topic_id,
             'created_by'   => auth()->id(),
         ]);
 
@@ -66,6 +66,7 @@ class AssignmentController extends Controller
         $assignments = Assignment::where('class_id', $classId)
             ->where('is_archived', 0)
             ->with([
+                'topic',
                 'attachments' => fn($q) => $q->where('is_archived', 0),
                 'submissions' => fn($q) => $q->where('is_archived', 0)
             ])
@@ -120,12 +121,16 @@ class AssignmentController extends Controller
             ], 404);
         }
 
+        $request->validate([
+            'topic_id' => 'nullable|exists:topics,id',
+        ]);
+
         $assignment->update($request->only([
             'title',
             'instructions',
             'max_points',
             'due_date',
-            'topic',
+            'topic_id',
         ]));
 
         return response()->json([
