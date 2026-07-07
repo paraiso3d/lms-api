@@ -88,10 +88,8 @@ class AssignmentController extends Controller
         ]);
     }
 
-    public function getStudentAssignmentDetails($assignmentId)
+    public function getStudentAssignmentSubmission($assignmentId, $studentId)
     {
-        $studentId = auth()->id();
-
         $assignment = Assignment::with([
             'topic:id,topic_name',
 
@@ -105,7 +103,8 @@ class AssignmentController extends Controller
                     ->with([
                         'files' => function ($q) {
                             $q->where('is_archived', 0);
-                        }
+                        },
+                        'student:id,first_name,last_name,email'
                     ]);
             }
         ])
@@ -116,7 +115,7 @@ class AssignmentController extends Controller
         if (!$assignment) {
             return response()->json([
                 'success' => false,
-                'message' => 'Assignment not found.'
+                'message' => 'Assignment not found.',
             ], 404);
         }
 
@@ -125,22 +124,17 @@ class AssignmentController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $assignment->id,
-                'title' => $assignment->title,
-                'instructions' => $assignment->instructions,
-                'max_points' => $assignment->max_points,
-                'due_date' => $assignment->due_date,
+                'assignment' => [
+                    'id' => $assignment->id,
+                    'title' => $assignment->title,
+                    'instructions' => $assignment->instructions,
+                    'max_points' => $assignment->max_points,
+                    'due_date' => $assignment->due_date,
+                    'topic' => $assignment->topic,
+                    'attachments' => $assignment->attachments,
+                ],
 
-                'topic' => $assignment->topic,
-
-                'attachments' => $assignment->attachments->map(function ($file) {
-                    return [
-                        'id' => $file->id,
-                        'file_name' => basename($file->file_path),
-                        'file_type' => $file->file_type,
-                        'url' => asset($file->file_path),
-                    ];
-                }),
+                'student' => $submission?->student,
 
                 'submission' => $submission ? [
                     'id' => $submission->id,
@@ -148,17 +142,9 @@ class AssignmentController extends Controller
                     'grade' => $submission->grade,
                     'feedback' => $submission->feedback,
                     'submitted_at' => $submission->created_at,
-
-                    'files' => $submission->files->map(function ($file) {
-                        return [
-                            'id' => $file->id,
-                            'file_name' => basename($file->file_path),
-                            'file_type' => $file->file_type,
-                            'url' => asset($file->file_path),
-                        ];
-                    })
-                ] : null
-            ]
+                    'files' => $submission->files,
+                ] : null,
+            ],
         ]);
     }
 
