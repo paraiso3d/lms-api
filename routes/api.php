@@ -9,7 +9,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\TopicController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,3 +79,11 @@ Route::get('/classes/{classId}/discussions', [DiscussionController::class, 'getD
 Route::get('/discussions/{id}', [DiscussionController::class, 'getDiscussion']);
 Route::post('/discussions/{discussionId}/reply', [DiscussionController::class, 'addReply']);
 Route::post('/discussions/{id}/archive', [DiscussionController::class, 'archiveDiscussion']);
+
+//Topic
+Route::get('/topics', [TopicController::class, 'getTopics']);
+Route::get('/topics/{id}', [TopicController::class, 'getTopicID']);
+
+Route::post('/create/topics', [TopicController::class, 'createTopic']);
+Route::post('/update/topics/{id}', [TopicController::class, 'updateTopic']);
+Route::post('/archive/topics/{id}', [TopicController::class, 'deleteTopic']);
