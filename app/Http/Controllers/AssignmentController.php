@@ -88,6 +88,82 @@ class AssignmentController extends Controller
         ]);
     }
 
+    public function getStudentAssignmentDetails($assignmentId)
+    {
+        $studentId = auth()->id();
+
+        $assignment = Assignment::with([
+            'topic:id,topic_name',
+
+            'attachments' => function ($q) {
+                $q->where('is_archived', 0);
+            },
+
+            'submissions' => function ($q) use ($studentId) {
+                $q->where('student_id', $studentId)
+                    ->where('is_archived', 0)
+                    ->with([
+                        'files' => function ($q) {
+                            $q->where('is_archived', 0);
+                        }
+                    ]);
+            }
+        ])
+            ->where('id', $assignmentId)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment not found.'
+            ], 404);
+        }
+
+        $submission = $assignment->submissions->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $assignment->id,
+                'title' => $assignment->title,
+                'instructions' => $assignment->instructions,
+                'max_points' => $assignment->max_points,
+                'due_date' => $assignment->due_date,
+
+                'topic' => $assignment->topic,
+
+                'attachments' => $assignment->attachments->map(function ($file) {
+                    return [
+                        'id' => $file->id,
+                        'file_name' => basename($file->file_path),
+                        'file_type' => $file->file_type,
+                        'url' => asset($file->file_path),
+                    ];
+                }),
+
+                'submission' => $submission ? [
+                    'id' => $submission->id,
+                    'status' => $submission->status,
+                    'grade' => $submission->grade,
+                    'feedback' => $submission->feedback,
+                    'submitted_at' => $submission->created_at,
+
+                    'files' => $submission->files->map(function ($file) {
+                        return [
+                            'id' => $file->id,
+                            'file_name' => basename($file->file_path),
+                            'file_type' => $file->file_type,
+                            'url' => asset($file->file_path),
+                        ];
+                    })
+                ] : null
+            ]
+        ]);
+    }
+
+
+
     // ============================================================
     // GET SINGLE ASSIGNMENT
     // ============================================================
