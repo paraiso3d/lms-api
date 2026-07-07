@@ -90,3 +90,4 @@ Route::post('/archive/topics/{id}', [TopicController::class, 'deleteTopic']);
 
 
 //DROPDOWN
+route::get('/dropdown/topics', [TopicController::class, 'dropdownTopics']);
