@@ -118,4 +118,16 @@ class TopicController extends Controller
             'message' => 'Topic archived successfully.',
         ]);
     }
+
+    public function dropdownTopics()
+    {
+        $topics = Topic::where('is_archived', 0)
+            ->orderBy('topic_name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $topics,
+        ]);
+    }
 }

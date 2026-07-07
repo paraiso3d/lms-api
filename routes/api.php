@@ -87,3 +87,6 @@ Route::get('/topics/{id}', [TopicController::class, 'getTopicID']);
 Route::post('/create/topics', [TopicController::class, 'createTopic']);
 Route::post('/update/topics/{id}', [TopicController::class, 'updateTopic']);
 Route::post('/archive/topics/{id}', [TopicController::class, 'deleteTopic']);
+
+
+//DROPDOWN
