@@ -58,7 +58,7 @@ Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'get
 Route::get('/assignments/{id}', [AssignmentController::class, 'getAssignment']);
 Route::post('update/assignments/{id}', [AssignmentController::class, 'updateAssignment']);
 Route::delete('delete/assignments/{id}', [AssignmentController::class, 'deleteAssignment']);
-Route::get('/assignmments/{id}/details', [AssignmentController::class, 'getStudentAssignmentDetails']);
+Route::get('/assignmments/{id}/details', [AssignmentController::class, 'getStudentAssignmentSubmission']);
 // SUBMISSIONS
 Route::middleware('auth:sanctum')->post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
 Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 'gradeSubmission']);
