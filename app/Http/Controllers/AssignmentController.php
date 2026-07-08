@@ -466,10 +466,7 @@ class AssignmentController extends Controller
             'private_comment' => 'required|string|max:2000',
         ]);
 
-        $student = auth()->user();
-
         $submission = Submission::where('id', $submissionId)
-            ->where('student_id', $student->id)
             ->where('is_archived', 0)
             ->first();
 
@@ -480,13 +477,25 @@ class AssignmentController extends Controller
             ], 404);
         }
 
+        $user = auth()->user();
+
+        // Student can only edit their own submission
+        if ($user->role->role_name === 'student' && $submission->student_id != $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        // Teachers are allowed automatically
+
         $submission->update([
             'private_comment' => $request->private_comment,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Private comment sent successfully.',
+            'message' => 'Private comment updated successfully.',
             'data' => $submission,
         ]);
     }
