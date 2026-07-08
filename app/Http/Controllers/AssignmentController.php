@@ -142,6 +142,7 @@ class AssignmentController extends Controller
                     'id' => $submission->id,
                     'grade' => $submission->grade,
                     'feedback' => $submission->feedback,
+                    'private_comment' => $submission->private_comment,
                     'submitted_at' => $submission->submitted_at,
                     'files' => $submission->files,
                 ] : null,
