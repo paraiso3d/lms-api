@@ -54,7 +54,7 @@ Route::post('archive/classes/{id}', [ClassessController::class, 'archiveClass'])
 
 // ASSIGNMENTS
 Route::middleware('auth:sanctum')->post('create/assignments', [AssignmentController::class, 'createAssignment']);
-Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'getAssignments']);
+Route::get('/classes/{class_id}/assignments', [AssignmentController::class, 'getAssignments'])->middleware(['auth:sanctum']);
 Route::get('/assignments/{id}', [AssignmentController::class, 'getAssignment']);
 Route::post('update/assignments/{id}', [AssignmentController::class, 'updateAssignment']);
 Route::delete('delete/assignments/{id}', [AssignmentController::class, 'deleteAssignment']);
