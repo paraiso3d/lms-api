@@ -283,14 +283,36 @@ class AssignmentController extends Controller
             ], 403);
         }
 
-        $submission = Submission::create([
-            'assignment_id'   => $assignmentId,
-            'student_id'      => $student->id,
-            'status'          => 'submitted',
-            'private_comment' => $request->private_comment,
-            'submitted_at'    => now(),
-        ]);
+        // Check if the student already submitted this assignment
+        $submission = Submission::where('assignment_id', $assignmentId)
+            ->where('student_id', $student->id)
+            ->where('is_archived', 0)
+            ->first();
 
+        if ($submission) {
+
+            // Update existing submission
+            $submission->update([
+                'status'          => 'submitted',
+                'private_comment' => $request->private_comment,
+                'submitted_at'    => now(),
+            ]);
+
+            // Remove old files if replacing them
+            SubmissionFile::where('submission_id', $submission->id)->delete();
+        } else {
+
+            // Create new submission
+            $submission = Submission::create([
+                'assignment_id'   => $assignmentId,
+                'student_id'      => $student->id,
+                'status'          => 'submitted',
+                'private_comment' => $request->private_comment,
+                'submitted_at'    => now(),
+            ]);
+        }
+
+        // Upload new files
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
 
@@ -306,8 +328,10 @@ class AssignmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Submitted successfully!',
-            'data'    => $submission->load('files'),
+            'message' => $submission->wasRecentlyCreated
+                ? 'Submitted successfully!'
+                : 'Resubmitted successfully!',
+            'data' => $submission->load('files'),
         ]);
     }
 
