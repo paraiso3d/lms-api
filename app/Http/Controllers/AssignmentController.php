@@ -136,12 +136,13 @@ class AssignmentController extends Controller
 
                 'student' => $submission?->student,
 
+                'submission_status' => $submission?->status ?? 'not_submitted',
+
                 'submission' => $submission ? [
                     'id' => $submission->id,
-                    'status' => $submission->status,
                     'grade' => $submission->grade,
                     'feedback' => $submission->feedback,
-                    'submitted_at' => $submission->created_at,
+                    'submitted_at' => $submission->submitted_at,
                     'files' => $submission->files,
                 ] : null,
             ],
