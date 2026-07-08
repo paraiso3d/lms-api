@@ -93,6 +93,8 @@ class AssignmentController extends Controller
         $assignment = Assignment::with([
             'topic:id,topic_name',
 
+            'teacher:id,first_name,last_name,email,avatar',
+
             'attachments' => function ($q) {
                 $q->where('is_archived', 0);
             },
@@ -104,7 +106,7 @@ class AssignmentController extends Controller
                         'files' => function ($q) {
                             $q->where('is_archived', 0);
                         },
-                        'student:id,first_name,last_name,email'
+                        'student:id,first_name,last_name,email,avatar'
                     ]);
             }
         ])
@@ -124,6 +126,23 @@ class AssignmentController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+
+                'teacher' => $assignment->teacher ? [
+                    'id' => $assignment->teacher->id,
+                    'first_name' => $assignment->teacher->first_name,
+                    'last_name' => $assignment->teacher->last_name,
+                    'email' => $assignment->teacher->email,
+                    'avatar' => $assignment->teacher->avatar,
+                ] : null,
+
+                'student' => $submission?->student ? [
+                    'id' => $submission->student->id,
+                    'first_name' => $submission->student->first_name,
+                    'last_name' => $submission->student->last_name,
+                    'email' => $submission->student->email,
+                    'avatar' => $submission->student->avatar,
+                ] : null,
+
                 'assignment' => [
                     'id' => $assignment->id,
                     'title' => $assignment->title,
@@ -134,12 +153,11 @@ class AssignmentController extends Controller
                     'attachments' => $assignment->attachments,
                 ],
 
-                'student' => $submission?->student,
-
                 'submission_status' => $submission?->status ?? 'not_submitted',
 
                 'submission' => $submission ? [
                     'id' => $submission->id,
+                    'status' => $submission->status,
                     'grade' => $submission->grade,
                     'feedback' => $submission->feedback,
                     'private_comment' => $submission->private_comment,
