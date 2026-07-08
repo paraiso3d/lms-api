@@ -15,6 +15,7 @@ class Submission extends Model
         'submitted_at',
         'status',
         'grade',
+        'private_comment',
         'feedback',
     ];
 

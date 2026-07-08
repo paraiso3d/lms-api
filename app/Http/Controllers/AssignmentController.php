@@ -252,11 +252,11 @@ class AssignmentController extends Controller
     {
         $request->validate([
             'files.*' => 'nullable|file|max:50240',
+            'private_comment' => 'nullable|string|max:2000',
         ]);
 
         $student = auth()->user();
 
-        // Optional: block non-students
         if ($student->role->role_name !== 'student') {
             return response()->json([
                 'success' => false,
@@ -265,9 +265,11 @@ class AssignmentController extends Controller
         }
 
         $submission = Submission::create([
-            'assignment_id' => $assignmentId,
-            'student_id'    => $student->id,
-            'status'        => 'submitted',
+            'assignment_id'   => $assignmentId,
+            'student_id'      => $student->id,
+            'status'          => 'submitted',
+            'private_comment' => $request->private_comment,
+            'submitted_at'    => now(),
         ]);
 
         if ($request->hasFile('files')) {
