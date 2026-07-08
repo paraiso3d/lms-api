@@ -33,4 +33,9 @@ class Submission extends Model
     {
         return $this->hasMany(SubmissionFile::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(SubmissionComment::class);
+    }
 }
