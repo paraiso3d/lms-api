@@ -460,6 +460,37 @@ class AssignmentController extends Controller
         ]);
     }
 
+    public function sendPrivateComment(Request $request, $submissionId)
+    {
+        $request->validate([
+            'private_comment' => 'required|string|max:2000',
+        ]);
+
+        $student = auth()->user();
+
+        $submission = Submission::where('id', $submissionId)
+            ->where('student_id', $student->id)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$submission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Submission not found.',
+            ], 404);
+        }
+
+        $submission->update([
+            'private_comment' => $request->private_comment,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Private comment sent successfully.',
+            'data' => $submission,
+        ]);
+    }
+
 
     // ============================================================
     // FILE SAVER (PUBLIC)

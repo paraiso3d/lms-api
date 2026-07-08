@@ -62,9 +62,12 @@ Route::get(
     '/assignments/{assignmentId}/students/{studentId}/details',
     [AssignmentController::class, 'getStudentAssignmentSubmission']
 );
+Route::post('/submissions/{submissionId}/private-comment', [AssignmentController::class, 'sendPrivateComment'])
+    ->middleware('auth:sanctum');
 // SUBMISSIONS
 Route::middleware('auth:sanctum')->post('/assignments/{assignment_id}/submit', [AssignmentController::class, 'submit']);
 Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 'gradeSubmission']);
+
 
 
 // QUIZZES
