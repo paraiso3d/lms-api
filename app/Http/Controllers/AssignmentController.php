@@ -9,6 +9,8 @@ use App\Models\SubmissionFile;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use App\Models\SubmissionComment;
 
 class AssignmentController extends Controller
 {
@@ -539,6 +541,46 @@ class AssignmentController extends Controller
             'success' => true,
             'message' => 'Private comment updated successfully.',
             'data' => $submission,
+        ]);
+    }
+
+    public function sendComment(Request $request, $submissionId)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:2000',
+        ]);
+
+        $submission = Submission::where('id', $submissionId)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$submission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Submission not found.',
+            ], 404);
+        }
+
+        $user = auth()->user();
+
+        // Student can only comment on their own submission
+        if ($user->role->role_name === 'student' && $submission->student_id != $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $comment = SubmissionComment::create([
+            'submission_id' => $submission->id,
+            'user_id'       => $user->id,
+            'comment'       => $request->comment,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment sent successfully.',
+            'data' => $comment->load('user:id,first_name,last_name,avatar'),
         ]);
     }
 

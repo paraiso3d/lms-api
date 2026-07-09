@@ -36,6 +36,8 @@ class Submission extends Model
 
     public function comments()
     {
-        return $this->hasMany(SubmissionComment::class);
+        return $this->hasMany(SubmissionComment::class)
+            ->where('is_archived', 0)
+            ->orderBy('created_at', 'asc');
     }
 }
