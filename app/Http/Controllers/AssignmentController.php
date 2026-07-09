@@ -584,6 +584,28 @@ class AssignmentController extends Controller
         ]);
     }
 
+    public function getSubmissionComments($submissionId)
+    {
+        $submission = Submission::with([
+            'comments.user:id,first_name,last_name,email,avatar'
+        ])
+            ->where('id', $submissionId)
+            ->where('is_archived', 0)
+            ->first();
+
+        if (!$submission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Submission not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $submission->comments,
+        ]);
+    }
+
 
     // ============================================================
     // FILE SAVER (PUBLIC)

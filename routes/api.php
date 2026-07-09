@@ -69,6 +69,8 @@ Route::middleware('auth:sanctum')->post('/assignments/{assignment_id}/submit', [
 Route::post('/submissions/{submission_id}/grade', [AssignmentController::class, 'gradeSubmission']);
 Route::post('/submissions/{submissionId}/comments', [AssignmentController::class, 'sendComment'])
     ->middleware('auth:sanctum');
+Route::get('/getsubmissions/{submissionId}/comments', [AssignmentController::class, 'getSubmissionComments'])
+    ->middleware('auth:sanctum');
 
 
 // QUIZZES
