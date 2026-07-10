@@ -88,28 +88,28 @@ class DiscussionController extends Controller
         ]);
     }
 
-    // ============================================================
-    // GET SINGLE DISCUSSION
-    // ============================================================
-    public function getDiscussion($id)
-    {
-        $discussion = Discussion::where('id', $id)
-            ->where('is_archived', 0)
-            ->with(['user', 'replies.user'])
-            ->first();
+    // // ============================================================
+    // // GET SINGLE DISCUSSION
+    // // ============================================================
+    // public function getDiscussion($id)
+    // {
+    //     $discussion = Discussion::where('id', $id)
+    //         ->where('is_archived', 0)
+    //         ->with(['user', 'replies.user'])
+    //         ->first();
 
-        if (!$discussion) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Discussion not found'
-            ], 404);
-        }
+    //     if (!$discussion) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Discussion not found'
+    //         ], 404);
+    //     }
 
-        return response()->json([
-            'success' => true,
-            'data'    => $discussion
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'data'    => $discussion
+    //     ]);
+    // }
 
     // ============================================================
     // ADD REPLY TO DISCUSSION

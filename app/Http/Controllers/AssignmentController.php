@@ -47,6 +47,7 @@ class AssignmentController extends Controller
 
                 AssignmentAttachment::create([
                     'assignment_id' => $assignment->id,
+                    'file_name'     => $file->getClientOriginalName(),
                     'file_path'     => $path,
                     'file_type'     => $file->getClientOriginalExtension(),
                 ]);

@@ -15,6 +15,7 @@ class DiscussionAttachment extends Model
     ];
 
 
+
     protected $appends = ['file_url'];
 
     public function getFileUrlAttribute()
