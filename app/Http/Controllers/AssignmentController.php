@@ -25,7 +25,7 @@ class AssignmentController extends Controller
             'instructions'  => 'nullable|string',
             'max_points'    => 'required|integer',
             'due_date'      => 'nullable|date',
-            'topic_id' => 'nullable|exists:topics,id',
+            'topic_id'      => 'nullable|exists:topics,id',
             'attachments.*' => 'nullable|file|max:50240',
         ]);
 
@@ -39,15 +39,19 @@ class AssignmentController extends Controller
             'created_by'   => auth()->id(),
         ]);
 
-        // Save attachments using helper
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
+        // Get the original filenames sent from the frontend
+        $fileNames = $request->input('file_names', []);
 
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $index => $file) {
                 $path = $this->saveFileToPublic($file, 'assignment');
+
+                // Use the provided file_name if available, otherwise fallback
+                $originalName = $fileNames[$index] ?? $file->getClientOriginalName();
 
                 AssignmentAttachment::create([
                     'assignment_id' => $assignment->id,
-                    'file_name'     => $file->getClientOriginalName(),
+                    'file_name'     => $originalName,
                     'file_path'     => $path,
                     'file_type'     => $file->getClientOriginalExtension(),
                 ]);
@@ -60,7 +64,6 @@ class AssignmentController extends Controller
             'data'    => $assignment->load('attachments'),
         ]);
     }
-
     // ============================================================
     // GET ALL ASSIGNMENTS FOR A CLASS
     // ============================================================
