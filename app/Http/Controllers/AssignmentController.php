@@ -129,6 +129,18 @@ class AssignmentController extends Controller
 
         $submission = $assignment->submissions->first();
 
+        $assignment->attachments->transform(function ($attachment) {
+            $attachment->file_path = asset('storage/' . $attachment->file_path);
+            return $attachment;
+        });
+
+        if ($submission && $submission->files) {
+            $submission->files->transform(function ($file) {
+                $file->file_path = asset('storage/' . $file->file_path);
+                return $file;
+            });
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
