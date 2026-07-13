@@ -12,6 +12,7 @@ class AssignmentAttachment extends Model
     protected $fillable = [
         'assignment_id',
         'file_path',
+        'file_name',
         'file_type',
         'is_archived',
     ];
