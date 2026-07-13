@@ -12,6 +12,7 @@ class SubmissionFile extends Model
     protected $fillable = [
         'submission_id',
         'file_path',
+        'file_name',
         'file_type',
     ];
 
