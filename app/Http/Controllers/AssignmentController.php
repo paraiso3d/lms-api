@@ -339,6 +339,7 @@ class AssignmentController extends Controller
                 SubmissionFile::create([
                     'submission_id' => $submission->id,
                     'file_path'     => $path,
+                    'file_name'     => $file->getClientOriginalName(),
                     'file_type'     => $file->getClientOriginalExtension(),
                 ]);
             }
