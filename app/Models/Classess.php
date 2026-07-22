@@ -55,4 +55,13 @@ class Classess extends Model
     {
         return $this->hasMany(Discussion::class, 'class_id');
     }
+    public function topics()
+    {
+        return $this->belongsToMany(
+            Topic::class,
+            'class_topic',
+            'class_id',
+            'topic_id'
+        );
+    }
 }

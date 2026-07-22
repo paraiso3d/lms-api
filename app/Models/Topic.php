@@ -12,4 +12,13 @@ class Topic extends Model
         'topic_name',
         'is_archived',
     ];
+    public function classes()
+    {
+        return $this->belongsToMany(
+            Classess::class,
+            'class_topic',
+            'topic_id',
+            'class_id'
+        );
+    }
 }

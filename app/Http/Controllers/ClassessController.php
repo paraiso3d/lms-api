@@ -20,6 +20,9 @@ class ClassessController extends Controller
             ->with([
                 'teacher',
 
+                // Load assigned topics
+                'topics:id,topic_name',
+
                 'assignments' => function ($q) {
                     $q->where('is_archived', 0)
                         ->with([
@@ -116,17 +119,21 @@ class ClassessController extends Controller
     public function createClass(Request $request)
     {
         $request->validate([
-            'class_name' => 'required|string|max:150',
-            'section'    => 'nullable|string|max:100',
-            'subject'    => 'nullable|string|max:150',
-            'room'       => 'nullable|string|max:50',
+            'class_name'  => 'required|string|max:150',
+            'section'     => 'nullable|string|max:100',
+            'subject'     => 'nullable|string|max:150',
+            'room'        => 'nullable|string|max:50',
             'description' => 'nullable|string',
+
+            // Topics
+            'topics'      => 'nullable|array',
+            'topics.*'    => 'exists:topics,id',
         ]);
 
         // Authenticated user = teacher
         $teacherId = auth()->id();
 
-        // Optional: Block non-teachers
+        // Block non-teachers
         if (auth()->user()->role->role_name !== 'teacher') {
             return response()->json([
                 'success' => false,
@@ -142,15 +149,24 @@ class ClassessController extends Controller
             $classCode = $this->generateClassCode();
         }
 
+        // Create class
         $class = ClassModel::create([
             'class_name'  => $request->class_name,
             'section'     => $request->section,
             'subject'     => $request->subject,
             'room'        => $request->room,
-            'teacher_id'  => $teacherId, // <= auto from auth
+            'teacher_id'  => $teacherId,
             'description' => $request->description,
             'class_code'  => $classCode,
         ]);
+
+        // Assign selected topics
+        if ($request->filled('topics')) {
+            $class->topics()->sync($request->topics);
+        }
+
+        // Load topics for the response
+        $class->load('topics');
 
         return response()->json([
             'success' => true,
