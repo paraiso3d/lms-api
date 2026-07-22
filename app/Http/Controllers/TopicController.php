@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Topic;
 use Illuminate\Http\Request;
+use App\Models\Classess;
+
 
 class TopicController extends Controller
 {
@@ -14,19 +16,27 @@ class TopicController extends Controller
     {
         $request->validate([
             'topic_name' => 'required|string|max:255|unique:topics,topic_name',
+            'class_id'   => 'required|exists:classes,id',
         ]);
 
+        // Create the topic
         $topic = Topic::create([
             'topic_name' => $request->topic_name,
         ]);
 
+        // Assign the topic to the class
+        $class = Classess::findOrFail($request->class_id);
+        $class->topics()->attach($topic->id);
+
         return response()->json([
             'success' => true,
-            'message' => 'Topic created successfully.',
-            'data' => $topic,
+            'message' => 'Topic created and assigned to class successfully.',
+            'data' => [
+                'topic' => $topic,
+                'class_id' => $class->id,
+            ],
         ], 201);
     }
-
     // ============================================================
     // GET ALL TOPICS
     // ============================================================
