@@ -239,6 +239,9 @@ class ClassessController extends Controller
                 'teacher',
                 'students',
 
+                // Assigned topics
+                'topics:id,topic_name',
+
                 'assignments' => function ($q) {
                     $q->where('is_archived', 0)
                         ->with([
@@ -266,7 +269,7 @@ class ClassessController extends Controller
                         ->orderBy('created_at', 'desc');
                 },
 
-                // 👇 ADDED: discussions with attachments
+                // Discussions with attachments and replies
                 'discussions' => function ($q) {
                     $q->where('is_archived', 0)
                         ->with([
