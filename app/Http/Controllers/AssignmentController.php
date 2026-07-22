@@ -254,15 +254,6 @@ class AssignmentController extends Controller
 
         if ($request->hasFile('attachments')) {
 
-            
-        foreach ($assignment->attachments as $attachment) {
-            if (file_exists(public_path($attachment->file_path))) {
-                unlink(public_path($attachment->file_path));
-            }
-            $attachment->delete();
-        }
-        
-
             foreach ($request->file('attachments') as $index => $file) {
                 $path = $this->saveFileToPublic($file, 'assignment');
 
