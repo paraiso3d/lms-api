@@ -231,24 +231,58 @@ class AssignmentController extends Controller
         }
 
         $request->validate([
-            'topic_id' => 'nullable|exists:topics,id',
+            'class_id'      => 'required|exists:classes,id',
+            'title'         => 'required|string|max:255',
+            'instructions'  => 'nullable|string',
+            'max_points'    => 'required|integer',
+            'due_date'      => 'nullable|date',
+            'topic_id'      => 'nullable|exists:topics,id',
+            'attachments.*' => 'nullable|file|max:50240',
         ]);
 
-        $assignment->update($request->only([
-            'title',
-            'instructions',
-            'max_points',
-            'due_date',
-            'topic_id',
-        ]));
+        $assignment->update([
+            'class_id'     => $request->class_id,
+            'title'        => $request->title,
+            'instructions' => $request->instructions,
+            'max_points'   => $request->max_points,
+            'due_date'     => $request->due_date,
+            'topic_id'     => $request->topic_id,
+        ]);
+
+        // Get custom file names from frontend
+        $fileNames = $request->input('file_names', []);
+
+        if ($request->hasFile('attachments')) {
+
+            
+        foreach ($assignment->attachments as $attachment) {
+            if (file_exists(public_path($attachment->file_path))) {
+                unlink(public_path($attachment->file_path));
+            }
+            $attachment->delete();
+        }
+        
+
+            foreach ($request->file('attachments') as $index => $file) {
+                $path = $this->saveFileToPublic($file, 'assignment');
+
+                $originalName = $fileNames[$index] ?? $file->getClientOriginalName();
+
+                AssignmentAttachment::create([
+                    'assignment_id' => $assignment->id,
+                    'file_name'     => $originalName,
+                    'file_path'     => $path,
+                    'file_type'     => $file->getClientOriginalExtension(),
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Assignment updated!',
-            'data'    => $assignment,
+            'message' => 'Assignment updated successfully!',
+            'data'    => $assignment->load('attachments'),
         ]);
     }
-
     // ============================================================
     // ARCHIVE ASSIGNMENT
     // ============================================================
